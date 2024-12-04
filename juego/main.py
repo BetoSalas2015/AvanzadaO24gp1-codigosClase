@@ -1,5 +1,6 @@
 import pygame
 from random import randint
+import math
 
 pygame.init()
 
@@ -25,7 +26,14 @@ alien_cambio_y = 40
 
 # Configuracion del laser
 laser_x = 0
-laser_y = 0
+laser_y = 500
+laser_cambio_y = 0.5
+laser_visible = False
+
+def disparo_laser(x, y):
+    global laser_visible
+    laser_visible = True
+    pantalla.blit(laser, (x,y))
 
 pygame.display.set_caption("Invasión Alien")
 pygame.display.set_icon(icono)
@@ -36,6 +44,13 @@ def jugador_pos(x, y):
 def alien_pos(x, y):
     pantalla.blit(alien, (x, y))
 
+#* Funciones Generales
+def esta_en_colision(x1, y1, x2, y2): 
+    distancia = math.sqrt( math.pow((x2 - x1), 2) + math.pow( (y2 - y1), 2) )
+    if distancia < 30:
+        return True
+    else:
+        return False
 
 #* Main Game Loop
 ejecutando = True
@@ -49,6 +64,10 @@ while ejecutando:
                 jugador_cambio_x = -0.2
             if evento.key == pygame.K_RIGHT:
                 jugador_cambio_x = 0.2
+            if evento.key == pygame.K_SPACE:
+                if not laser_visible:
+                    laser_x = jugador_x + 5
+                disparo_laser(laser_x, laser_y)
         if evento.type == pygame.KEYUP:
             if evento.key == pygame.K_LEFT or evento.key == pygame.K_RIGHT:
                 jugador_cambio_x = 0
@@ -66,4 +85,16 @@ while ejecutando:
         alien_cambio = -0.3
         alien_y += alien_cambio_y
     alien_pos(alien_x, alien_y)
+    # Actualización del laser
+    if laser_visible:
+        disparo_laser(laser_x, laser_y)
+        laser_y -= laser_cambio_y
+        
+    # Colisiones
+    if esta_en_colision(alien_x,alien_y, laser_x, laser_y):
+        laser_y = 500
+        laser_visible = False
+        alien_x = randint(0,736)
+        alien_y = randint(0, 300)
+    
     pygame.display.update()
