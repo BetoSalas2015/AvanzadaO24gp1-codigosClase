@@ -9,7 +9,7 @@ pantalla = pygame.display.set_mode( (800, 600) )
 #* Carga de imagenes
 icono = pygame.image.load("rocket.png")
 jugador = pygame.image.load("rocket_prota.png")
-alien = pygame.image.load("alien.png")
+
 space = pygame.image.load("space.jpg")
 laser = pygame.image.load("laser.png")
 
@@ -19,10 +19,22 @@ jugador_y = 536
 jugador_cambio_x = 0
 
 # inicialización del alien
-alien_x = randint(0, 736)
-alien_y = randint(0, 364)
-alien_cambio = 0.3
-alien_cambio_y = 40
+numero_enemigos = 7
+
+alien = []
+alien_x = []
+alien_y = []
+alien_cambio_y = []
+alien_cambio_x = []
+
+for i in range(numero_enemigos):
+    alien.append(pygame.image.load("alien.png"))
+    alien_x.append(randint(0, 736))
+    alien_y.append(randint(0, 364))
+    alien_cambio_x.append(0.3)
+    alien_cambio_y.append(40)
+
+
 
 # Configuracion del laser
 laser_x = 0
@@ -41,8 +53,8 @@ pygame.display.set_icon(icono)
 def jugador_pos(x, y):
     pantalla.blit(jugador, (x, y))
     
-def alien_pos(x, y):
-    pantalla.blit(alien, (x, y))
+def alien_pos (x, y, i):
+    pantalla.blit(alien[i], (x, y))
 
 #* Funciones Generales
 def esta_en_colision(x1, y1, x2, y2): 
@@ -77,24 +89,31 @@ while ejecutando:
     if jugador_x > 736:
         jugador_x = 736
     jugador_pos(jugador_x, jugador_y)
-    alien_x += alien_cambio
-    if alien_x < 0:
-        alien_cambio = 0.3
-        alien_y += alien_cambio_y
-    if alien_x > 736:
-        alien_cambio = -0.3
-        alien_y += alien_cambio_y
-    alien_pos(alien_x, alien_y)
+    
+    # Actualización del Alien
+    for i in range(numero_enemigos):
+        alien_x[i] += alien_cambio_x[i]
+        if alien_x[i] < 0:
+            alien_cambio_x[i] = 0.3
+            alien_y[i] += alien_cambio_y[i]
+        if alien_x[i] > 736:
+            alien_cambio_x[i] = -0.3
+            alien_y[i] += alien_cambio_y[i]
+        alien_x[i] += alien_cambio_x[i]         # Actualzamos individualemete la posición
+        # Colisiones
+        # Movemos el chequeo de colisiones al for para un chequeo individual
+        if esta_en_colision(alien_x[i],alien_y[i], laser_x, laser_y):
+            laser_y = 500
+            laser_visible = False
+            alien_x[i] = randint(0,736)        # Actualizamos las coliciones a las listas
+            alien_y[i] = randint(0, 300)
+        alien_pos(alien_x[i], alien_y[i], i )
+    
     # Actualización del laser
     if laser_visible:
         disparo_laser(laser_x, laser_y)
         laser_y -= laser_cambio_y
         
-    # Colisiones
-    if esta_en_colision(alien_x,alien_y, laser_x, laser_y):
-        laser_y = 500
-        laser_visible = False
-        alien_x = randint(0,736)
-        alien_y = randint(0, 300)
+    
     
     pygame.display.update()
